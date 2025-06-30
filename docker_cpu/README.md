@@ -10,10 +10,11 @@ and a Python script that can handle multiple images in parallel.
 docker_cpu/
 ├── Dockerfile             # build instructions for the container
 ├── docker-compose.yml     # compose configuration
-├── process_images.py      # script that removes backgrounds
+├── process_images.py      # CLI helpers for background removal
+├── server.py              # HTTP API server
 ├── README.md              # this file
-├── input/                 # place input images here
-└── output/                # processed images are written here
+├── input/                 # place input images here (optional)
+└── output/                # processed images are written here (optional)
 ```
 
 When deployed on the server copy the entire folder to
@@ -21,18 +22,18 @@ When deployed on the server copy the entire folder to
 
 ## How it works
 
-`process_images.py` loads the BRIAAI ONNX model using `onnxruntime`.
-For each image it calculates an alpha mask and produces a PNG with a
-transparent background. Multiple files can be processed at once using a
-`ProcessPoolExecutor`.
+`process_images.py` contains the background removal logic using the BRIAAI
+ONNX model and `onnxruntime`. `server.py` exposes this functionality via a
+simple HTTP API built with Flask.
 
 The Dockerfile concatenates the split model files from `packages/model-briaai`
-into `briaai.onnx` and installs minimal runtime dependencies.
+into `briaai.onnx` and installs minimal runtime dependencies including Flask.
 
 ## Usage
 
-1. Copy this directory to `/home/kucu/background-remover` on the host and create
-   input/output folders:
+1. Copy this directory to `/home/kucu/background-remover` on the host and
+   create optional `input/` and `output/` folders if you want to batch process
+   files via CLI:
    ```bash
    mkdir -p /home/kucu/background-remover/input \
        /home/kucu/background-remover/output
@@ -41,8 +42,11 @@ into `briaai.onnx` and installs minimal runtime dependencies.
    ```bash
    docker compose up --build
    ```
-3. Put images in the `input/` folder. Processed files appear in `output/` with
-   the same name and `.png` extension.
+3. Send an image to the API and write the result to a file:
+   ```bash
+   curl -X POST http://172.20.0.18:8000/remove-bg -F "file=@stamp.jpeg" \
+        --output result.png
+   ```
 
 ### Manual run
 
