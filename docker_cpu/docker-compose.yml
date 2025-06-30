@@ -1,11 +1,14 @@
 version: '3'
 services:
   background_remover:
-    build: .
+    build:
+      context: /home/kucu/background-remover
+      dockerfile: Dockerfile
     container_name: background_remover
+    restart: unless-stopped
     volumes:
-      - ./input:/data/input
-      - ./output:/data/output
+      - /home/kucu/background-remover/input:/data/input
+      - /home/kucu/background-remover/output:/data/output
     working_dir: /app
     entrypoint: ["bash", "-c"]
     command: ["python process_images.py /data/input/* -o /data/output"]
