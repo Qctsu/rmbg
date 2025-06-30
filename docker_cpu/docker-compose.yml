@@ -1,0 +1,23 @@
+version: '3'
+services:
+  background_remover:
+    build:
+      context: /home/kucu/background-remover
+      dockerfile: Dockerfile
+    container_name: background_remover
+    restart: unless-stopped
+    volumes:
+      - /home/kucu/background-remover/input:/data/input
+      - /home/kucu/background-remover/output:/data/output
+    working_dir: /app
+    command: ["python", "server.py"]
+    networks:
+      traefik_default:
+        ipv4_address: 172.20.0.18
+
+networks:
+  traefik_default:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
